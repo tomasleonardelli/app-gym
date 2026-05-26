@@ -10,6 +10,7 @@ export default function Home() {
   const [isLogin, setIsLogin] = useState(true)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [emailSent, setEmailSent] = useState(false)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -31,6 +32,7 @@ export default function Home() {
       if (error) { setError(error.message) }
       else if (data.user) {
         await supabase.from('profiles').insert({ id: data.user.id, name })
+        setEmailSent(true)
       }
     }
     setLoading(false)
@@ -39,6 +41,25 @@ export default function Home() {
   async function handleLogout() {
     await supabase.auth.signOut()
   }
+
+  if (emailSent) return (
+    <div style={{ minHeight: '100vh', background: '#020B18', color: '#F1F5F9', fontFamily: 'system-ui, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ textAlign: 'center', maxWidth: 380, padding: '0 24px' }}>
+        <div style={{ fontSize: 56, marginBottom: 20 }}>📧</div>
+        <div style={{ fontSize: 22, fontWeight: 800, marginBottom: 12 }}>Revisá tu email</div>
+        <div style={{ fontSize: 14, color: '#64748B', lineHeight: 1.6, marginBottom: 24 }}>
+          Te mandamos un link de confirmación a<br/>
+          <span style={{ color: '#3B82F6', fontWeight: 600 }}>{email}</span>
+        </div>
+        <div style={{ background: '#0F172A', borderRadius: 14, padding: '16px 20px', border: '1px solid #1E293B', fontSize: 13, color: '#94A3B8', lineHeight: 1.6 }}>
+          Una vez que confirmes tu cuenta podés volver acá e iniciar sesión.
+        </div>
+        <button onClick={() => { setEmailSent(false); setIsLogin(true); }} style={{ marginTop: 20, background: 'transparent', border: '1px solid #334155', borderRadius: 12, padding: '10px 24px', color: '#64748B', fontSize: 13, cursor: 'pointer' }}>
+          Volver al login
+        </button>
+      </div>
+    </div>
+  )
 
   if (user) return (
     <div style={{ minHeight: '100vh', background: '#020B18', color: '#F1F5F9', fontFamily: 'system-ui, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -61,25 +82,17 @@ export default function Home() {
           <div style={{ fontSize: 28, fontWeight: 800 }}>App Gym</div>
           <div style={{ fontSize: 14, color: '#475569', marginTop: 4 }}>Tu entrenamiento, tu data</div>
         </div>
-
         <div style={{ background: '#0F172A', borderRadius: 20, padding: 32, border: '1px solid #1E293B' }}>
           <div style={{ display: 'flex', marginBottom: 24, background: '#1E293B', borderRadius: 12, padding: 4 }}>
-            <button onClick={() => setIsLogin(true)} style={{ flex: 1, padding: '8px', borderRadius: 10, border: 'none', background: isLogin ? '#3B82F6' : 'transparent', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>
-              Entrar
-            </button>
-            <button onClick={() => setIsLogin(false)} style={{ flex: 1, padding: '8px', borderRadius: 10, border: 'none', background: !isLogin ? '#3B82F6' : 'transparent', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>
-              Registrarse
-            </button>
+            <button onClick={() => setIsLogin(true)} style={{ flex: 1, padding: '8px', borderRadius: 10, border: 'none', background: isLogin ? '#3B82F6' : 'transparent', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>Entrar</button>
+            <button onClick={() => setIsLogin(false)} style={{ flex: 1, padding: '8px', borderRadius: 10, border: 'none', background: !isLogin ? '#3B82F6' : 'transparent', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>Registrarse</button>
           </div>
-
           {!isLogin && (
             <input value={name} onChange={e => setName(e.target.value)} placeholder="Tu nombre" style={{ width: '100%', padding: '12px 16px', borderRadius: 12, border: '1px solid #1E293B', background: '#1E293B', color: '#F1F5F9', fontSize: 14, marginBottom: 12, boxSizing: 'border-box' }} />
           )}
           <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" type="email" style={{ width: '100%', padding: '12px 16px', borderRadius: 12, border: '1px solid #1E293B', background: '#1E293B', color: '#F1F5F9', fontSize: 14, marginBottom: 12, boxSizing: 'border-box' }} />
           <input value={password} onChange={e => setPassword(e.target.value)} placeholder="Contraseña" type="password" style={{ width: '100%', padding: '12px 16px', borderRadius: 12, border: '1px solid #1E293B', background: '#1E293B', color: '#F1F5F9', fontSize: 14, marginBottom: 20, boxSizing: 'border-box' }} />
-
           {error && <div style={{ color: '#EF4444', fontSize: 13, marginBottom: 12 }}>{error}</div>}
-
           <button onClick={handleAuth} disabled={loading} style={{ width: '100%', padding: '14px', borderRadius: 12, border: 'none', background: '#3B82F6', color: '#fff', fontSize: 15, fontWeight: 700, cursor: 'pointer' }}>
             {loading ? 'Cargando...' : isLogin ? 'Entrar' : 'Crear cuenta'}
           </button>
