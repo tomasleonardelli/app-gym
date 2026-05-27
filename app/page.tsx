@@ -4,14 +4,17 @@ import { supabase } from '../lib/supabase'
 
 type User = { email: string; id: string } | null
 
-// Ejercicios que tienen series de fuerza (para mostrar campos de peso)
+// ── Rest timer defaults (configurable by programmer) ─────────────────────────
+const REST_BETWEEN_EXERCISES = 90  // seconds
+const REST_BETWEEN_SETS = 60       // seconds
+
 const STRENGTH_EXERCISES = new Set([
   "Sentadilla Frontal","Romanian Deadlift","Bulgarian Split Squat","Pallof Press",
   "Dominadas con lastre","Press banca mancuernas","Face Pull con cuerda",
   "Remo Yates / Pendlay Row","Curl + Press Arnold","Peso Muerto Convencional",
   "Swing con Kettlebell","Step-up con mancuernas","Plank con arrastre","Turkish Get-Up",
   "Goblet squat","Hip thrust","Dead bug","Remo con mancuerna","Sumo squat con mancuerna",
-  "Farmer carry","Sentadilla con salto","Bulgarian Split Squat","Landmine rotation",
+  "Farmer carry","Sentadilla con salto","Landmine rotation",
   "Pull-up o jalón al pecho","Abducción de cadera en máquina",
 ])
 
@@ -109,6 +112,67 @@ const ROUTINES = [
 ]
 
 function fmt(s: number) { return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0") }
+function fmtDate(d: string) { return new Date(d).toLocaleDateString('es-AR',{day:'2-digit',month:'short',year:'numeric'}) }
+
+// ── Rest Timer Modal ──────────────────────────────────────────────────────────
+function RestTimer({ defaultSeconds, label, onDone }: { defaultSeconds: number; label: string; onDone: () => void }) {
+  const [secs, setSecs] = useState(defaultSeconds)
+  const [running, setRunning] = useState(true)
+  const ref = useRef<any>(null)
+
+  useEffect(() => {
+    if (running && secs > 0) {
+      ref.current = setInterval(() => setSecs(s => s - 1), 1000)
+    } else {
+      clearInterval(ref.current)
+      if (secs === 0 && running) { setRunning(false); onDone() }
+    }
+    return () => clearInterval(ref.current)
+  }, [running, secs])
+
+  const pct = (secs / defaultSeconds) * 100
+  const r = 54
+  const circ = 2 * Math.PI * r
+  const offset = circ * (1 - pct / 100)
+
+  return (
+    <div style={{position:"fixed",inset:0,zIndex:400,background:"rgba(0,0,0,0.92)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+      <div style={{background:"#0F172A",borderRadius:24,padding:"32px 28px",width:"100%",maxWidth:320,textAlign:"center",border:"1px solid #1E293B"}}>
+        <div style={{fontSize:12,fontWeight:700,color:"#475569",letterSpacing:"0.15em",marginBottom:16}}>DESCANSO</div>
+        <div style={{fontSize:13,color:"#64748B",marginBottom:20}}>{label}</div>
+
+        {/* Ring */}
+        <div style={{position:"relative",width:124,height:124,margin:"0 auto 20px"}}>
+          <svg width={124} height={124} style={{transform:"rotate(-90deg)"}}>
+            <circle cx={62} cy={62} r={r} fill="none" stroke="#1E293B" strokeWidth={8}/>
+            <circle cx={62} cy={62} r={r} fill="none" stroke={secs < 10 ? "#EF4444" : "#3B82F6"} strokeWidth={8}
+              strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round"
+              style={{transition:"stroke-dashoffset 1s linear"}}/>
+          </svg>
+          <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:32,fontWeight:800,color:secs<10?"#EF4444":"#F1F5F9"}}>
+            {secs}
+          </div>
+        </div>
+
+        {/* +/- controls */}
+        <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:16,marginBottom:20}}>
+          <button onClick={()=>setSecs(s=>Math.max(10,s-10))} style={{width:40,height:40,borderRadius:10,border:"1px solid #334155",background:"#1E293B",color:"#94A3B8",fontSize:18,cursor:"pointer"}}>-</button>
+          <span style={{fontSize:12,color:"#475569",width:60,textAlign:"center"}}>±10 seg</span>
+          <button onClick={()=>setSecs(s=>s+10)} style={{width:40,height:40,borderRadius:10,border:"1px solid #334155",background:"#1E293B",color:"#94A3B8",fontSize:18,cursor:"pointer"}}>+</button>
+        </div>
+
+        <div style={{display:"flex",gap:10}}>
+          <button onClick={()=>setRunning(r=>!r)} style={{flex:1,padding:"12px",borderRadius:12,border:"none",background:"#1E293B",color:"#94A3B8",fontSize:14,fontWeight:700,cursor:"pointer"}}>
+            {running?"⏸ Pausa":"▶ Seguir"}
+          </button>
+          <button onClick={onDone} style={{flex:1,padding:"12px",borderRadius:12,border:"none",background:"#3B82F6",color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer"}}>
+            Saltar →
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 // ── Info Modal ────────────────────────────────────────────────────────────────
 function InfoModal({ name, onClose }: { name: string; onClose: () => void }) {
@@ -140,7 +204,7 @@ function InfoModal({ name, onClose }: { name: string; onClose: () => void }) {
   )
 }
 
-// ── Exercise Row with weight tracking ────────────────────────────────────────
+// ── Exercise Row ──────────────────────────────────────────────────────────────
 function ExRow({ ex, color, num, checked, onCheck, onInfo, lastWeights, onWeightsChange }: any) {
   const [open, setOpen] = useState(false)
   const [secs, setSecs] = useState(ex.timer)
@@ -148,10 +212,13 @@ function ExRow({ ex, color, num, checked, onCheck, onInfo, lastWeights, onWeight
   const ref = useRef<any>(null)
   const isStrength = STRENGTH_EXERCISES.has(ex.name)
   const numSets = ex.sets || 3
-  const [weights, setWeights] = useState<string[]>(() => {
-    if (lastWeights && lastWeights.length > 0) return lastWeights.map((w:any) => w.toString())
-    return Array(numSets).fill('')
-  })
+  const [weights, setWeights] = useState<string[]>(() =>
+    lastWeights && lastWeights.length > 0 ? lastWeights.map((w:any) => w.toString()) : Array(numSets).fill('')
+  )
+
+  useEffect(() => {
+    if (lastWeights && lastWeights.length > 0) setWeights(lastWeights.map((w:any) => w.toString()))
+  }, [lastWeights])
 
   useEffect(() => {
     if (running && secs > 0) { ref.current = setInterval(() => setSecs((s:number) => s-1), 1000) }
@@ -159,16 +226,8 @@ function ExRow({ ex, color, num, checked, onCheck, onInfo, lastWeights, onWeight
     return () => clearInterval(ref.current)
   }, [running])
 
-  useEffect(() => {
-    if (lastWeights && lastWeights.length > 0) {
-      setWeights(lastWeights.map((w:any) => w.toString()))
-    }
-  }, [lastWeights])
-
   function updateWeight(idx: number, val: string) {
-    const newW = [...weights]
-    newW[idx] = val
-    setWeights(newW)
+    const newW = [...weights]; newW[idx] = val; setWeights(newW)
     onWeightsChange?.(ex.name, newW)
   }
 
@@ -188,10 +247,8 @@ function ExRow({ ex, color, num, checked, onCheck, onInfo, lastWeights, onWeight
         {hasInfo && <button onClick={onInfo} style={{background:"transparent",border:"1px solid #334155",borderRadius:8,width:28,height:28,cursor:"pointer",color:"#64748B",fontSize:14,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>?</button>}
         <div onClick={() => setOpen(o => !o)} style={{color:"#475569",fontSize:13,cursor:"pointer",transform:open?"rotate(180deg)":"none",flexShrink:0}}>▼</div>
       </div>
-
       {open && (
         <div style={{padding:"0 14px 14px",borderTop:"1px solid #1E293B"}}>
-          {/* Weight inputs for strength exercises */}
           {isStrength && (
             <div style={{marginTop:12,marginBottom:12}}>
               <div style={{fontSize:10,fontWeight:700,color:"#475569",letterSpacing:"0.1em",marginBottom:8}}>PESOS POR SERIE (kg)</div>
@@ -199,30 +256,22 @@ function ExRow({ ex, color, num, checked, onCheck, onInfo, lastWeights, onWeight
                 {weights.map((w, i) => (
                   <div key={i} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
                     <div style={{fontSize:9,color:"#475569"}}>S{i+1}</div>
-                    <input
-                      type="number"
-                      value={w}
-                      onChange={e => updateWeight(i, e.target.value)}
+                    <input type="number" value={w} onChange={e => updateWeight(i, e.target.value)}
                       placeholder={lastWeights?.[i] ? String(lastWeights[i]) : "kg"}
-                      style={{width:52,padding:"6px 4px",borderRadius:8,border:"1px solid #334155",background:"#1E293B",color:"#F1F5F9",fontSize:13,textAlign:"center",outline:"none"}}
-                    />
-                    {lastWeights?.[i] && (
-                      <div style={{fontSize:9,color:"#3B82F6"}}>↑{lastWeights[i]}kg</div>
-                    )}
+                      style={{width:52,padding:"6px 4px",borderRadius:8,border:"1px solid #334155",background:"#1E293B",color:"#F1F5F9",fontSize:13,textAlign:"center",outline:"none"}}/>
+                    {lastWeights?.[i] > 0 && <div style={{fontSize:9,color:"#3B82F6"}}>↑{lastWeights[i]}kg</div>}
                   </div>
                 ))}
               </div>
             </div>
           )}
-
-          {/* Timer */}
           {ex.timer > 0 && (
             <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap",marginTop:4}}>
               <div style={{width:100,height:5,background:"#1E293B",borderRadius:3,overflow:"hidden"}}>
                 <div style={{height:"100%",width:`${pct}%`,background:done?"#22C55E":color,borderRadius:3,transition:"width 1s linear"}}/>
               </div>
-              <span style={{fontSize:14,fontWeight:700,color:done?"#22C55E":"#F1F5F9",minWidth:42}}>{done?"✓ listo":fmt(secs)}</span>
-              {!done && <button onClick={() => setRunning(r => !r)} style={{background:running?"#334155":color,border:"none",borderRadius:8,padding:"5px 14px",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer"}}>{running?"⏸ Pausa":"▶ Start"}</button>}
+              <span style={{fontSize:14,fontWeight:700,color:done?"#22C55E":"#F1F5F9",minWidth:42}}>{done?"✓":fmt(secs)}</span>
+              {!done && <button onClick={() => setRunning(r => !r)} style={{background:running?"#334155":color,border:"none",borderRadius:8,padding:"5px 14px",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer"}}>{running?"⏸":"▶ Start"}</button>}
               <button onClick={() => {setRunning(false);setSecs(ex.timer)}} style={{background:"transparent",border:"1px solid #334155",borderRadius:8,padding:"5px 10px",color:"#64748B",fontSize:12,cursor:"pointer"}}>↺</button>
             </div>
           )}
@@ -238,7 +287,7 @@ function SessionClock({ accent, onElapsedChange }: { accent: string; onElapsedCh
   const [running, setRunning] = useState(false)
   const ref = useRef<any>(null)
   useEffect(() => {
-    if (running) ref.current = setInterval(() => setElapsed(e => { onElapsedChange(e+1); return e+1 }), 1000)
+    if (running) ref.current = setInterval(() => setElapsed(e => { const n=e+1; onElapsedChange(n); return n }), 1000)
     else clearInterval(ref.current)
     return () => clearInterval(ref.current)
   }, [running])
@@ -270,21 +319,68 @@ function CompletionModal({ day, routine, duration, onSave, saving }: any) {
           <div style={{fontSize:13,color:"#3B82F6",marginTop:4}}>⏱ {fmt(duration)}</div>
         </div>
         <div style={{marginBottom:16}}>
-          <div style={{fontSize:11,fontWeight:700,color:"#475569",letterSpacing:"0.1em",marginBottom:8}}>NOTAS DE LA SESIÓN (opcional)</div>
-          <textarea
-            value={notes}
-            onChange={e => setNotes(e.target.value)}
+          <div style={{fontSize:11,fontWeight:700,color:"#475569",letterSpacing:"0.1em",marginBottom:8}}>NOTAS (opcional)</div>
+          <textarea value={notes} onChange={e => setNotes(e.target.value)}
             placeholder="¿Cómo te fue? ¿Algo para ajustar la próxima vez?"
-            style={{width:"100%",padding:"12px 14px",borderRadius:12,border:"1px solid #1E293B",background:"#1E293B",color:"#F1F5F9",fontSize:13,resize:"none",height:90,boxSizing:"border-box",outline:"none",fontFamily:"system-ui,sans-serif"}}
-          />
+            style={{width:"100%",padding:"12px 14px",borderRadius:12,border:"1px solid #1E293B",background:"#1E293B",color:"#F1F5F9",fontSize:13,resize:"none",height:90,boxSizing:"border-box",outline:"none",fontFamily:"system-ui,sans-serif"}}/>
         </div>
-        <button
-          onClick={() => onSave(notes)}
-          disabled={saving}
-          style={{width:"100%",padding:"16px",borderRadius:12,border:"none",background:saving?"#1E293B":"#22C55E",color:"#fff",fontSize:15,fontWeight:800,cursor:"pointer"}}
-        >
+        <button onClick={() => onSave(notes)} disabled={saving}
+          style={{width:"100%",padding:"16px",borderRadius:12,border:"none",background:saving?"#1E293B":"#22C55E",color:"#fff",fontSize:15,fontWeight:800,cursor:"pointer"}}>
           {saving ? "Guardando..." : "Guardar sesión"}
         </button>
+      </div>
+    </div>
+  )
+}
+
+// ── Session Detail Modal ──────────────────────────────────────────────────────
+function SessionDetail({ session, exercises, onClose }: any) {
+  const routine = ROUTINES.find(r => r.id === session.routine_id)
+  const day = routine?.days.find((d:any) => d.id === session.day_id)
+  return (
+    <div style={{position:"fixed",inset:0,zIndex:200,background:"rgba(0,0,0,0.88)",display:"flex",alignItems:"flex-end",justifyContent:"center"}} onClick={onClose}>
+      <div onClick={e=>e.stopPropagation()} style={{background:"#0F172A",borderRadius:"20px 20px 0 0",width:"100%",maxWidth:480,maxHeight:"90vh",overflowY:"auto",paddingBottom:32}}>
+        <div style={{display:"flex",justifyContent:"center",padding:"12px 0 0"}}><div style={{width:36,height:4,borderRadius:2,background:"#334155"}}/></div>
+        <div style={{padding:"16px 20px 0"}}>
+          <div style={{fontSize:11,color:"#475569",marginBottom:4}}>{fmtDate(session.completed_at)}</div>
+          <div style={{fontSize:20,fontWeight:800,color:"#F1F5F9",marginBottom:2}}>{routine?.name}</div>
+          <div style={{fontSize:14,color:"#64748B",marginBottom:16}}>{day?.label} · {day?.title}</div>
+          <div style={{display:"flex",gap:16,marginBottom:20}}>
+            <div style={{background:"#1E293B",borderRadius:12,padding:"10px 14px",flex:1,textAlign:"center"}}>
+              <div style={{fontSize:18,fontWeight:800,color:"#3B82F6"}}>{session.duration_seconds?fmt(session.duration_seconds):'-'}</div>
+              <div style={{fontSize:10,color:"#475569",marginTop:2}}>DURACIÓN</div>
+            </div>
+            <div style={{background:"#1E293B",borderRadius:12,padding:"10px 14px",flex:1,textAlign:"center"}}>
+              <div style={{fontSize:18,fontWeight:800,color:"#22C55E"}}>{session.exercises_completed||'-'}</div>
+              <div style={{fontSize:10,color:"#475569",marginTop:2}}>EJERCICIOS</div>
+            </div>
+          </div>
+          {session.notes && (
+            <div style={{background:"#1E293B",borderRadius:12,padding:"12px 14px",marginBottom:16,borderLeft:"3px solid #F59E0B"}}>
+              <div style={{fontSize:10,fontWeight:700,color:"#F59E0B",letterSpacing:"0.1em",marginBottom:4}}>NOTAS</div>
+              <div style={{fontSize:13,color:"#94A3B8"}}>{session.notes}</div>
+            </div>
+          )}
+          {exercises.length > 0 && (
+            <>
+              <div style={{fontSize:11,fontWeight:700,color:"#475569",letterSpacing:"0.1em",marginBottom:10}}>PESOS USADOS</div>
+              {exercises.map((ex:any, i:number) => (
+                <div key={i} style={{background:"#1E293B",borderRadius:10,padding:"10px 14px",marginBottom:8}}>
+                  <div style={{fontSize:13,fontWeight:700,color:"#F1F5F9",marginBottom:6}}>{ex.exercise_name}</div>
+                  <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                    {ex.series.map((w:number, j:number) => (
+                      <div key={j} style={{background:"#0F172A",borderRadius:8,padding:"4px 10px",fontSize:12}}>
+                        <span style={{color:"#475569"}}>S{j+1} </span>
+                        <span style={{color:"#3B82F6",fontWeight:700}}>{w}kg</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
+          <button onClick={onClose} style={{width:"100%",marginTop:16,background:"#1E293B",border:"none",borderRadius:12,padding:"14px",color:"#94A3B8",fontSize:14,fontWeight:700,cursor:"pointer"}}>Cerrar</button>
+        </div>
       </div>
     </div>
   )
@@ -300,8 +396,14 @@ export default function Home() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [emailSent, setEmailSent] = useState(false)
+
+  // Navigation
+  const [tab, setTab] = useState<'resumen'|'historial'|'rutinas'>('resumen')
   const [routineIdx, setRoutineIdx] = useState<number|null>(null)
   const [dayIdx, setDayIdx] = useState<number|null>(null)
+  const [inSession, setInSession] = useState(false)
+
+  // Session state
   const [checks, setChecks] = useState<Record<string,boolean>>({})
   const [log, setLog] = useState<{t:string;name:string}[]>([])
   const [modal, setModal] = useState<string|null>(null)
@@ -310,38 +412,55 @@ export default function Home() {
   const [lastWeights, setLastWeights] = useState<Record<string,number[]>>({})
   const [showCompletion, setShowCompletion] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [recentSessions, setRecentSessions] = useState<any[]>([])
+
+  // Rest timer
+  const [restTimer, setRestTimer] = useState<{seconds:number;label:string}|null>(null)
+
+  // Data
+  const [sessions, setSessions] = useState<any[]>([])
+  const [selectedSession, setSelectedSession] = useState<any>(null)
+  const [selectedSessionExercises, setSelectedSessionExercises] = useState<any[]>([])
+  const [stats, setStats] = useState({ total: 0, thisWeek: 0, streak: 0, lastSession: '' })
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => { setUser(session?.user as User ?? null) })
     supabase.auth.onAuthStateChange((_event, session) => { setUser(session?.user as User ?? null) })
   }, [])
 
-  useEffect(() => {
-    if (user) loadRecentSessions()
-  }, [user])
+  useEffect(() => { if (user) { loadSessions(); } }, [user])
 
-  async function loadRecentSessions() {
-    const { data } = await supabase
-      .from('sessions')
-      .select('*')
-      .order('completed_at', { ascending: false })
-      .limit(5)
-    if (data) setRecentSessions(data)
+  async function loadSessions() {
+    const { data } = await supabase.from('sessions').select('*').order('completed_at', { ascending: false })
+    if (data) {
+      setSessions(data)
+      // Compute stats
+      const total = data.length
+      const now = new Date()
+      const weekAgo = new Date(now.getTime() - 7*24*60*60*1000)
+      const thisWeek = data.filter(s => new Date(s.completed_at) > weekAgo).length
+      // Streak
+      let streak = 0
+      const days = new Set(data.map(s => new Date(s.completed_at).toDateString()))
+      let d = new Date()
+      while (days.has(d.toDateString())) { streak++; d.setDate(d.getDate()-1) }
+      const lastSession = data[0] ? fmtDate(data[0].completed_at) : '-'
+      setStats({ total, thisWeek, streak, lastSession })
+    }
   }
 
   async function loadLastWeights(routineId: string, dayId: number) {
     if (!user) return
-    const { data } = await supabase
-      .from('exercise_weights')
-      .select('*')
-      .eq('routine_id', routineId)
-      .eq('day_id', dayId)
+    const { data } = await supabase.from('exercise_weights').select('*').eq('routine_id', routineId).eq('day_id', dayId)
     if (data) {
       const map: Record<string,number[]> = {}
       data.forEach((r: any) => { map[r.exercise_name] = r.last_series })
       setLastWeights(map)
     }
+  }
+
+  async function loadSessionExercises(sessionId: string) {
+    const { data } = await supabase.from('session_exercises').select('*').eq('session_id', sessionId)
+    setSelectedSessionExercises(data || [])
   }
 
   async function handleAuth() {
@@ -357,10 +476,16 @@ export default function Home() {
     setLoading(false)
   }
 
-  async function handleLogout() { await supabase.auth.signOut(); setRoutineIdx(null); setDayIdx(null) }
+  async function handleLogout() { await supabase.auth.signOut(); setRoutineIdx(null); setDayIdx(null); setInSession(false) }
 
-  function toggleCheck(key: string, exName: string) {
+  function handleCheck(key: string, exName: string, isStrength: boolean) {
     const was = !!checks[key]
+    if (!was) {
+      // Show rest timer
+      const restSecs = isStrength ? REST_BETWEEN_EXERCISES : REST_BETWEEN_SETS
+      const label = isStrength ? "Entre ejercicios" : "Entre series"
+      setRestTimer({ seconds: restSecs, label })
+    }
     setChecks(c => ({ ...c, [key]: !c[key] }))
     if (!was) { const t = new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"}); setLog(l=>[{t,name:exName},...l]) }
   }
@@ -373,68 +498,52 @@ export default function Home() {
     if (!user || !routine || !day) return
     setSaving(true)
     try {
-      // 1. Guardar sesión
       const { data: sessionData } = await supabase.from('sessions').insert({
-        user_id: user.id,
-        routine_id: routine.id,
-        day_id: day.id,
-        duration_seconds: sessionDuration,
-        exercises_completed: totalDone,
-        notes: notes || null,
+        user_id: user.id, routine_id: routine.id, day_id: day.id,
+        duration_seconds: sessionDuration, exercises_completed: totalDone, notes: notes || null,
       }).select().single()
 
       if (sessionData) {
-        // 2. Guardar ejercicios con pesos
         const exerciseRows = Object.entries(exerciseWeights)
           .filter(([_, w]) => w.some(v => v !== ''))
           .map(([name, weights]) => ({
-            session_id: sessionData.id,
-            user_id: user.id,
-            routine_id: routine.id,
-            day_id: day.id,
-            exercise_name: name,
-            series: weights.map(w => parseFloat(w) || 0),
+            session_id: sessionData.id, user_id: user.id, routine_id: routine.id, day_id: day.id,
+            exercise_name: name, series: weights.map(w => parseFloat(w) || 0),
           }))
+        if (exerciseRows.length > 0) await supabase.from('session_exercises').insert(exerciseRows)
 
-        if (exerciseRows.length > 0) {
-          await supabase.from('session_exercises').insert(exerciseRows)
-        }
-
-        // 3. Actualizar últimos pesos de referencia
         for (const [name, weights] of Object.entries(exerciseWeights)) {
           if (weights.some(v => v !== '')) {
             await supabase.from('exercise_weights').upsert({
-              user_id: user.id,
-              routine_id: routine.id,
-              day_id: day.id,
-              exercise_name: name,
-              last_series: weights.map(w => parseFloat(w) || 0),
-              updated_at: new Date().toISOString(),
+              user_id: user.id, routine_id: routine.id, day_id: day.id, exercise_name: name,
+              last_series: weights.map(w => parseFloat(w) || 0), updated_at: new Date().toISOString(),
             }, { onConflict: 'user_id,routine_id,day_id,exercise_name' })
           }
         }
       }
-
-      await loadRecentSessions()
-      setShowCompletion(false)
-      setDayIdx(null)
-      setChecks({})
-      setLog([])
-      setExerciseWeights({})
+      await loadSessions()
+      setShowCompletion(false); setInSession(false); setDayIdx(null)
+      setChecks({}); setLog([]); setExerciseWeights({})
+      setTab('resumen')
     } catch (e) { console.error(e) }
     setSaving(false)
   }
 
   const bg = { minHeight:'100vh', background:'#020B18', color:'#F1F5F9', fontFamily:'system-ui,-apple-system,sans-serif' }
+  const routine = routineIdx !== null ? ROUTINES[routineIdx] : null
+  const day = routine && dayIdx !== null ? routine.days[dayIdx] : null
+  const totalEx = day ? day.phases.reduce((a:number,p:any)=>a+p.exercises.length,0) : 0
+  const totalDone = Object.values(checks).filter(Boolean).length
+  const allDone = day && totalDone === totalEx
 
+  // ── Auth screens ──
   if (emailSent) return (
     <div style={{...bg,display:'flex',alignItems:'center',justifyContent:'center'}}>
       <div style={{textAlign:'center',maxWidth:380,padding:'0 24px'}}>
         <div style={{fontSize:56,marginBottom:20}}>📧</div>
         <div style={{fontSize:22,fontWeight:800,marginBottom:12}}>Revisá tu email</div>
-        <div style={{fontSize:14,color:'#64748B',lineHeight:1.6,marginBottom:24}}>Te mandamos un link de confirmación a<br/><span style={{color:'#3B82F6',fontWeight:600}}>{email}</span></div>
-        <div style={{background:'#0F172A',borderRadius:14,padding:'16px 20px',border:'1px solid #1E293B',fontSize:13,color:'#94A3B8',lineHeight:1.6}}>Una vez que confirmes tu cuenta podés volver acá e iniciar sesión.</div>
-        <button onClick={()=>{setEmailSent(false);setIsLogin(true)}} style={{marginTop:20,background:'transparent',border:'1px solid #334155',borderRadius:12,padding:'10px 24px',color:'#64748B',fontSize:13,cursor:'pointer'}}>Volver al login</button>
+        <div style={{fontSize:14,color:'#64748B',lineHeight:1.6,marginBottom:24}}>Te mandamos un link a<br/><span style={{color:'#3B82F6',fontWeight:600}}>{email}</span></div>
+        <button onClick={()=>{setEmailSent(false);setIsLogin(true)}} style={{background:'transparent',border:'1px solid #334155',borderRadius:12,padding:'10px 24px',color:'#64748B',fontSize:13,cursor:'pointer'}}>Volver al login</button>
       </div>
     </div>
   )
@@ -462,78 +571,97 @@ export default function Home() {
     </div>
   )
 
-  const routine = routineIdx !== null ? ROUTINES[routineIdx] : null
-  const day = routine && dayIdx !== null ? routine.days[dayIdx] : null
-  const totalEx = day ? day.phases.reduce((a:number,p:any)=>a+p.exercises.length,0) : 0
-  const totalDone = Object.values(checks).filter(Boolean).length
-  const allDone = day && totalDone === totalEx
+  // ── In session ──
+  if (inSession && day && routine) {
+    const pct = totalEx > 0 ? (totalDone/totalEx)*100 : 0
+    return (
+      <div style={bg}>
+        {modal && <InfoModal name={modal} onClose={()=>setModal(null)}/>}
+        {showCompletion && <CompletionModal day={day} routine={routine} duration={sessionDuration} onSave={saveSession} saving={saving}/>}
+        {restTimer && <RestTimer defaultSeconds={restTimer.seconds} label={restTimer.label} onDone={()=>setRestTimer(null)}/>}
 
-  // Selector de rutina
-  if (routineIdx === null) return (
-    <div style={bg}>
-      <div style={{maxWidth:440,margin:'0 auto',padding:'32px 16px'}}>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:28}}>
-          <div>
-            <div style={{fontSize:11,letterSpacing:'0.2em',color:'#06B6D4',fontWeight:700,marginBottom:4}}>APP GYM</div>
-            <div style={{fontSize:20,fontWeight:800}}>¿Qué entrenamos hoy?</div>
-          </div>
-          <button onClick={handleLogout} style={{background:'#0F172A',border:'1px solid #1E293B',borderRadius:10,padding:'8px 14px',color:'#64748B',fontSize:12,cursor:'pointer'}}>Salir</button>
-        </div>
-        <div style={{fontSize:12,color:'#475569',marginBottom:16}}>Hola, {user.email} 👋</div>
-
-        {ROUTINES.map((r,i)=>(
-          <div key={r.id} onClick={()=>{setRoutineIdx(i);setDayIdx(null);setChecks({});setLog([])}} style={{background:'#0F172A',border:`1px solid ${r.color}33`,borderRadius:18,padding:'20px 22px',marginBottom:12,cursor:'pointer',display:'flex',alignItems:'center',gap:16}}>
-            <div style={{width:54,height:54,borderRadius:16,flexShrink:0,background:r.color+'22',display:'flex',alignItems:'center',justifyContent:'center',fontSize:26}}>{r.emoji}</div>
-            <div style={{flex:1}}>
-              <div style={{fontSize:16,fontWeight:800,color:'#F1F5F9',marginBottom:3}}>{r.name}</div>
-              <div style={{fontSize:12,color:'#475569'}}>{r.description}</div>
-              <div style={{fontSize:11,color:r.color,marginTop:4,fontWeight:600}}>{r.days.length} días</div>
+        <div style={{maxWidth:480,margin:'0 auto',padding:'20px 16px 48px'}}>
+          <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:18}}>
+            <button onClick={()=>{setInSession(false);setDayIdx(null)}} style={{background:'#0F172A',border:'1px solid #1E293B',borderRadius:10,width:38,height:38,cursor:'pointer',color:'#94A3B8',fontSize:20,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>‹</button>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:10,fontWeight:700,color:day.accent,letterSpacing:'0.15em'}}>{day.label} · {routine.name}</div>
+              <div style={{fontSize:16,fontWeight:800}}>{day.title}</div>
             </div>
-            <div style={{color:'#334155',fontSize:20}}>›</div>
+            <div style={{fontSize:14,color:'#475569',flexShrink:0}}><span style={{color:allDone?'#22C55E':day.accent,fontWeight:700}}>{totalDone}</span>/{totalEx}</div>
           </div>
-        ))}
 
-        {recentSessions.length > 0 && (
-          <div style={{marginTop:24,background:'#0F172A',borderRadius:14,padding:'16px',border:'1px solid #1E293B'}}>
-            <div style={{fontSize:10,fontWeight:700,color:'#475569',letterSpacing:'0.15em',marginBottom:12}}>ÚLTIMAS SESIONES</div>
-            {recentSessions.map((s,i)=>{
-              const r = ROUTINES.find(r=>r.id===s.routine_id)
-              const d = r?.days.find((d:any)=>d.id===s.day_id)
-              return(
-                <div key={i} style={{display:'flex',alignItems:'center',gap:10,marginBottom:8,paddingBottom:8,borderBottom:i<recentSessions.length-1?'1px solid #1E293B':'none'}}>
-                  <div style={{fontSize:18}}>{r?.emoji||'🏋️'}</div>
-                  <div style={{flex:1}}>
-                    <div style={{fontSize:12,fontWeight:700,color:'#F1F5F9'}}>{r?.name} · {d?.label}</div>
-                    <div style={{fontSize:11,color:'#475569'}}>{new Date(s.completed_at).toLocaleDateString('es-AR')} · {s.duration_seconds?fmt(s.duration_seconds):'-'}</div>
-                    {s.notes && <div style={{fontSize:11,color:'#64748B',marginTop:2,fontStyle:'italic'}}>"{s.notes}"</div>}
-                  </div>
+          <div style={{height:4,background:'#1E293B',borderRadius:4,marginBottom:20,overflow:'hidden'}}>
+            <div style={{height:'100%',width:`${pct}%`,background:allDone?'#22C55E':day.accent,borderRadius:4,transition:'width 0.4s ease'}}/>
+          </div>
+
+          <SessionClock accent={day.accent} onElapsedChange={setSessionDuration}/>
+
+          {day.phases.map((phase:any, pi:number) => {
+            const phaseDone = phase.exercises.filter((_:any,ei:number)=>checks[`${pi}-${ei}`]).length
+            return (
+              <div key={phase.id} style={{marginBottom:24}}>
+                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
+                  <div style={{width:3,height:18,borderRadius:2,background:phase.color,flexShrink:0}}/>
+                  <div style={{fontSize:11,fontWeight:800,color:phase.color,letterSpacing:'0.12em'}}>{phase.label}</div>
+                  <div style={{fontSize:10,color:'#475569'}}>({phase.duration} min)</div>
+                  <div style={{marginLeft:'auto',fontSize:11,fontWeight:600,color:phaseDone===phase.exercises.length?'#22C55E':'#475569'}}>{phaseDone}/{phase.exercises.length}</div>
                 </div>
-              )
-            })}
-          </div>
-        )}
-      </div>
-    </div>
-  )
+                {phase.exercises.map((ex:any,ei:number)=>(
+                  <ExRow key={ei} ex={ex} color={phase.color} num={ei+1}
+                    checked={!!checks[`${pi}-${ei}`]}
+                    onCheck={()=>handleCheck(`${pi}-${ei}`,ex.name,STRENGTH_EXERCISES.has(ex.name))}
+                    onInfo={()=>setModal(ex.name)}
+                    lastWeights={lastWeights[ex.name]}
+                    onWeightsChange={handleWeightsChange}
+                  />
+                ))}
+              </div>
+            )
+          })}
 
-  // Selector de día
-  if (dayIdx === null) return (
+          {allDone && !showCompletion && (
+            <button onClick={()=>setShowCompletion(true)}
+              style={{width:'100%',padding:'18px',borderRadius:16,border:'none',background:'linear-gradient(135deg,#16A34A,#22C55E)',color:'#fff',fontSize:16,fontWeight:800,cursor:'pointer',marginTop:8}}>
+              🎉 Guardar sesión
+            </button>
+          )}
+
+          {log.length > 0 && (
+            <div style={{marginTop:24,background:'#0F172A',borderRadius:14,padding:'16px',border:'1px solid #1E293B'}}>
+              <div style={{fontSize:10,fontWeight:700,color:'#475569',letterSpacing:'0.15em',marginBottom:10}}>LOG</div>
+              {log.map((l,i)=>(
+                <div key={i} style={{display:'flex',gap:10,marginBottom:6,fontSize:12}}>
+                  <span style={{color:'#334155',flexShrink:0}}>{l.t}</span>
+                  <span style={{color:'#4ADE80'}}>✓</span>
+                  <span style={{color:'#94A3B8'}}>{l.name}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // ── Day selector ──
+  if (routineIdx !== null && !inSession) return (
     <div style={bg}>
       <div style={{maxWidth:440,margin:'0 auto',padding:'24px 16px'}}>
         <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:28}}>
           <button onClick={()=>setRoutineIdx(null)} style={{background:'#0F172A',border:'1px solid #1E293B',borderRadius:10,width:38,height:38,cursor:'pointer',color:'#94A3B8',fontSize:20,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>‹</button>
           <div>
-            <div style={{fontSize:11,color:'#475569',letterSpacing:'0.1em',fontWeight:700}}>RUTINA</div>
+            <div style={{fontSize:11,color:'#475569',letterSpacing:'0.1em',fontWeight:700}}>PROGRAMA</div>
             <div style={{fontSize:18,fontWeight:800}}>{routine!.name}</div>
           </div>
         </div>
         {routine!.days.map((d:any,i:number)=>(
-          <div key={d.id} onClick={()=>{setDayIdx(i);setChecks({});setLog([]);setExerciseWeights({});loadLastWeights(routine!.id,d.id)}} style={{background:'#0F172A',border:'1px solid #1E293B',borderRadius:18,padding:'18px 20px',marginBottom:12,cursor:'pointer',display:'flex',alignItems:'center',gap:16}}>
+          <div key={d.id} onClick={()=>{setDayIdx(i);setChecks({});setLog([]);setExerciseWeights({});loadLastWeights(routine!.id,d.id);setInSession(true)}}
+            style={{background:'#0F172A',border:'1px solid #1E293B',borderRadius:18,padding:'18px 20px',marginBottom:12,cursor:'pointer',display:'flex',alignItems:'center',gap:16}}>
             <div style={{width:50,height:50,borderRadius:14,flexShrink:0,background:d.accent+'22',display:'flex',alignItems:'center',justifyContent:'center',fontSize:24}}>{d.emoji}</div>
             <div style={{flex:1}}>
               <div style={{fontSize:11,fontWeight:700,color:d.accent,letterSpacing:'0.1em',marginBottom:2}}>{d.label}</div>
               <div style={{fontSize:16,fontWeight:700}}>{d.title}</div>
-              <div style={{fontSize:11,color:'#475569',marginTop:2}}>{d.phases.reduce((a:number,p:any)=>a+p.exercises.length,0)} ejercicios · 45–55 min</div>
+              <div style={{fontSize:11,color:'#475569',marginTop:2}}>{d.phases.reduce((a:number,p:any)=>a+p.exercises.length,0)} ejercicios</div>
             </div>
             <div style={{color:'#334155',fontSize:20}}>›</div>
           </div>
@@ -542,70 +670,125 @@ export default function Home() {
     </div>
   )
 
-  // Sesión
-  const pct = totalEx > 0 ? (totalDone/totalEx)*100 : 0
+  // ── Main tabs ──
   return (
     <div style={bg}>
-      {modal && <InfoModal name={modal} onClose={()=>setModal(null)}/>}
-      {showCompletion && <CompletionModal day={day} routine={routine} duration={sessionDuration} onSave={saveSession} saving={saving}/>}
+      {selectedSession && (
+        <SessionDetail session={selectedSession} exercises={selectedSessionExercises} onClose={()=>setSelectedSession(null)}/>
+      )}
 
-      <div style={{maxWidth:480,margin:'0 auto',padding:'20px 16px 48px'}}>
-        <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:18}}>
-          <button onClick={()=>setDayIdx(null)} style={{background:'#0F172A',border:'1px solid #1E293B',borderRadius:10,width:38,height:38,cursor:'pointer',color:'#94A3B8',fontSize:20,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>‹</button>
-          <div style={{flex:1,minWidth:0}}>
-            <div style={{fontSize:10,fontWeight:700,color:day!.accent,letterSpacing:'0.15em'}}>{day!.label} · {routine!.name}</div>
-            <div style={{fontSize:16,fontWeight:800}}>{day!.title}</div>
+      {/* Header */}
+      <div style={{maxWidth:480,margin:'0 auto',padding:'24px 16px 0'}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:24}}>
+          <div>
+            <div style={{fontSize:11,letterSpacing:'0.2em',color:'#06B6D4',fontWeight:700,marginBottom:2}}>APP GYM</div>
+            <div style={{fontSize:14,color:'#475569'}}>Hola, {user.email?.split('@')[0]} 👋</div>
           </div>
-          <div style={{fontSize:14,color:'#475569',flexShrink:0}}><span style={{color:allDone?'#22C55E':day!.accent,fontWeight:700}}>{totalDone}</span>/{totalEx}</div>
+          <button onClick={handleLogout} style={{background:'#0F172A',border:'1px solid #1E293B',borderRadius:10,padding:'8px 14px',color:'#64748B',fontSize:12,cursor:'pointer'}}>Salir</button>
         </div>
 
-        <div style={{height:4,background:'#1E293B',borderRadius:4,marginBottom:20,overflow:'hidden'}}>
-          <div style={{height:'100%',width:`${pct}%`,background:allDone?'#22C55E':day!.accent,borderRadius:4,transition:'width 0.4s ease'}}/>
+        {/* Tabs */}
+        <div style={{display:'flex',background:'#0F172A',borderRadius:14,padding:4,marginBottom:24,border:'1px solid #1E293B'}}>
+          {([['resumen','📊 Resumen'],['historial','📋 Historial'],['rutinas','🏋️ Rutinas']] as const).map(([t,label])=>(
+            <button key={t} onClick={()=>setTab(t)}
+              style={{flex:1,padding:'9px 4px',borderRadius:10,border:'none',background:tab===t?'#1E3A5F':'transparent',color:tab===t?'#3B82F6':'#475569',fontWeight:tab===t?700:400,cursor:'pointer',fontSize:12,transition:'all 0.2s'}}>
+              {label}
+            </button>
+          ))}
         </div>
 
-        <SessionClock accent={day!.accent} onElapsedChange={setSessionDuration}/>
-
-        {day!.phases.map((phase:any,pi:number)=>{
-          const phaseDone=phase.exercises.filter((_:any,ei:number)=>checks[`${pi}-${ei}`]).length
-          return(
-            <div key={phase.id} style={{marginBottom:24}}>
-              <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
-                <div style={{width:3,height:18,borderRadius:2,background:phase.color,flexShrink:0}}/>
-                <div style={{fontSize:11,fontWeight:800,color:phase.color,letterSpacing:'0.12em'}}>{phase.label}</div>
-                <div style={{fontSize:10,color:'#475569'}}>({phase.duration} min)</div>
-                <div style={{marginLeft:'auto',fontSize:11,fontWeight:600,color:phaseDone===phase.exercises.length?'#22C55E':'#475569'}}>{phaseDone}/{phase.exercises.length}</div>
-              </div>
-              {phase.exercises.map((ex:any,ei:number)=>(
-                <ExRow
-                  key={ei} ex={ex} color={phase.color} num={ei+1}
-                  checked={!!checks[`${pi}-${ei}`]}
-                  onCheck={()=>toggleCheck(`${pi}-${ei}`,ex.name)}
-                  onInfo={()=>setModal(ex.name)}
-                  lastWeights={lastWeights[ex.name]}
-                  onWeightsChange={handleWeightsChange}
-                />
+        {/* ── RESUMEN ── */}
+        {tab === 'resumen' && (
+          <div>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:16}}>
+              {[
+                {label:'SESIONES TOTALES',value:stats.total,color:'#3B82F6',emoji:'🏋️'},
+                {label:'ESTA SEMANA',value:stats.thisWeek,color:'#10B981',emoji:'📅'},
+                {label:'RACHA ACTUAL',value:`${stats.streak} días`,color:'#F59E0B',emoji:'🔥'},
+                {label:'ÚLTIMA SESIÓN',value:stats.lastSession,color:'#8B5CF6',emoji:'📆'},
+              ].map((s,i)=>(
+                <div key={i} style={{background:'#0F172A',borderRadius:16,padding:'16px',border:'1px solid #1E293B'}}>
+                  <div style={{fontSize:20,marginBottom:6}}>{s.emoji}</div>
+                  <div style={{fontSize:22,fontWeight:800,color:s.color}}>{s.value}</div>
+                  <div style={{fontSize:10,color:'#475569',letterSpacing:'0.08em',marginTop:2}}>{s.label}</div>
+                </div>
               ))}
             </div>
-          )
-        })}
 
-        {allDone && !showCompletion && (
-          <button
-            onClick={()=>setShowCompletion(true)}
-            style={{width:'100%',padding:'18px',borderRadius:16,border:'none',background:'linear-gradient(135deg,#16A34A,#22C55E)',color:'#fff',fontSize:16,fontWeight:800,cursor:'pointer',marginTop:8}}
-          >
-            🎉 Guardar sesión
-          </button>
+            {sessions.length > 0 && (
+              <div style={{background:'#0F172A',borderRadius:16,padding:'16px',border:'1px solid #1E293B'}}>
+                <div style={{fontSize:11,fontWeight:700,color:'#475569',letterSpacing:'0.15em',marginBottom:12}}>ÚLTIMAS SESIONES</div>
+                {sessions.slice(0,3).map((s,i)=>{
+                  const r = ROUTINES.find(r=>r.id===s.routine_id)
+                  
+                  return (
+                    <div key={i} onClick={async()=>{setSelectedSession(s);await loadSessionExercises(s.id)}}
+                      style={{display:'flex',alignItems:'center',gap:10,marginBottom:i<2?10:0,paddingBottom:i<2?10:0,borderBottom:i<2?'1px solid #1E293B':'none',cursor:'pointer'}}>
+                      <div style={{fontSize:22}}>{r?.emoji||'🏋️'}</div>
+                      <div style={{flex:1}}>
+                        <div style={{fontSize:13,fontWeight:700,color:'#F1F5F9'}}>{r?.name} · {d?.label}</div>
+                        <div style={{fontSize:11,color:'#475569'}}>{fmtDate(s.completed_at)} · {s.duration_seconds?fmt(s.duration_seconds):'-'}</div>
+                      </div>
+                      <div style={{color:'#334155',fontSize:16}}>›</div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+
+            {sessions.length === 0 && (
+              <div style={{textAlign:'center',padding:'40px 20px',color:'#475569'}}>
+                <div style={{fontSize:40,marginBottom:12}}>💪</div>
+                <div style={{fontSize:16,fontWeight:700,marginBottom:4}}>¡Empezá a entrenar!</div>
+                <div style={{fontSize:13}}>Tus estadísticas van a aparecer acá.</div>
+              </div>
+            )}
+          </div>
         )}
 
-        {log.length > 0 && (
-          <div style={{marginTop:24,background:'#0F172A',borderRadius:14,padding:'16px',border:'1px solid #1E293B'}}>
-            <div style={{fontSize:10,fontWeight:700,color:'#475569',letterSpacing:'0.15em',marginBottom:10}}>LOG DE SESIÓN</div>
-            {log.map((l,i)=>(
-              <div key={i} style={{display:'flex',gap:10,marginBottom:6,fontSize:12}}>
-                <span style={{color:'#334155',flexShrink:0}}>{l.t}</span>
-                <span style={{color:'#4ADE80'}}>✓</span>
-                <span style={{color:'#94A3B8'}}>{l.name}</span>
+        {/* ── HISTORIAL ── */}
+        {tab === 'historial' && (
+          <div>
+            {sessions.length === 0 ? (
+              <div style={{textAlign:'center',padding:'40px 20px',color:'#475569'}}>
+                <div style={{fontSize:40,marginBottom:12}}>📋</div>
+                <div style={{fontSize:16,fontWeight:700,marginBottom:4}}>Sin sesiones todavía</div>
+                <div style={{fontSize:13}}>Completá tu primera sesión para ver el historial.</div>
+              </div>
+            ) : sessions.map((s,i)=>{
+              const r = ROUTINES.find(r=>r.id===s.routine_id)
+              const d = r?.days.find((d:any)=>d.id===s.day_id)
+              return (
+                <div key={i} onClick={async()=>{setSelectedSession(s);await loadSessionExercises(s.id)}}
+                  style={{background:'#0F172A',borderRadius:16,padding:'16px',marginBottom:10,border:'1px solid #1E293B',cursor:'pointer',display:'flex',alignItems:'center',gap:12}}>
+                  <div style={{width:44,height:44,borderRadius:12,background:(r?.color||'#3B82F6')+'22',display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,flexShrink:0}}>{r?.emoji||'🏋️'}</div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:14,fontWeight:700,color:'#F1F5F9'}}>{r?.name}</div>
+                    <div style={{fontSize:12,color:'#64748B'}}>{d?.label} · {d?.title}</div>
+                    <div style={{fontSize:11,color:'#475569',marginTop:2}}>{fmtDate(s.completed_at)} · {s.duration_seconds?fmt(s.duration_seconds):'-'} · {s.exercises_completed} ej.</div>
+                    {s.notes && <div style={{fontSize:11,color:'#64748B',marginTop:3,fontStyle:'italic',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>"{s.notes}"</div>}
+                  </div>
+                  <div style={{color:'#334155',fontSize:16,flexShrink:0}}>›</div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {/* ── RUTINAS ── */}
+        {tab === 'rutinas' && (
+          <div>
+            <div style={{fontSize:13,color:'#475569',marginBottom:16}}>Elegí un programa para entrenar</div>
+            {ROUTINES.map((r,i)=>(
+              <div key={r.id} onClick={()=>setRoutineIdx(i)}
+                style={{background:'#0F172A',border:`1px solid ${r.color}33`,borderRadius:18,padding:'20px 22px',marginBottom:12,cursor:'pointer',display:'flex',alignItems:'center',gap:16}}>
+                <div style={{width:54,height:54,borderRadius:16,flexShrink:0,background:r.color+'22',display:'flex',alignItems:'center',justifyContent:'center',fontSize:26}}>{r.emoji}</div>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:16,fontWeight:800,color:'#F1F5F9',marginBottom:3}}>{r.name}</div>
+                  <div style={{fontSize:12,color:'#475569'}}>{r.description}</div>
+                  <div style={{fontSize:11,color:r.color,marginTop:4,fontWeight:600}}>{r.days.length} días</div>
+                </div>
+                <div style={{color:'#334155',fontSize:20}}>›</div>
               </div>
             ))}
           </div>
