@@ -720,7 +720,7 @@ export default function Home() {
                 <div style={{fontSize:11,fontWeight:700,color:'#475569',letterSpacing:'0.15em',marginBottom:12}}>ÚLTIMAS SESIONES</div>
                 {sessions.slice(0,3).map((s,i)=>{
                   const r = ROUTINES.find(r=>r.id===s.routine_id)
-                  
+                  const d = r?.days.find((dd:any)=>dd.id===s.day_id)
                   return (
                     <div key={i} onClick={async()=>{setSelectedSession(s);await loadSessionExercises(s.id)}}
                       style={{display:'flex',alignItems:'center',gap:10,marginBottom:i<2?10:0,paddingBottom:i<2?10:0,borderBottom:i<2?'1px solid #1E293B':'none',cursor:'pointer'}}>
