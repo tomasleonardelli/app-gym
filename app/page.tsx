@@ -16,6 +16,12 @@ const STRENGTH_EXERCISES = new Set([
   "Goblet squat","Hip thrust","Dead bug","Remo con mancuerna","Sumo squat con mancuerna",
   "Farmer carry","Sentadilla con salto","Landmine rotation",
   "Pull-up o jalón al pecho","Abducción de cadera en máquina",
+  "Peso muerto a una pierna","Hip thrust con barra","Estocadas caminando con mancuernas",
+  "Nordic curl","Copenhagen plank","Remo en polea baja sentado",
+  "Jalón al pecho agarre neutro","Remo con mancuerna neutro","Press banco inclinado mancuernas",
+  "Curl martillo","Rotación externa con cuerda","Sentadilla barra baja",
+  "Hang clean","Remo en máquina pecho apoyado","Suitcase carry",
+  "Medicine ball slam","Broad jump",
 ])
 
 const ALL_INFO: Record<string, { muscles: string; steps: string[]; tip: string; img?: string }> = {
@@ -66,6 +72,39 @@ const ALL_INFO: Record<string, { muscles: string; steps: string[]; tip: string; 
   "Pull-up o jalón al pecho": { muscles: "Dorsales · Bíceps · Trapecio inferior · Core", steps: ["JALÓN: Agarre amplio, jalá la barra hacia el pecho superior.", "Codos apuntan hacia abajo y afuera.", "DOMINADAS: Agarre prono amplio, colgá con hombros deprimidos.", "Jalá hasta que la barbilla supere la barra.", "Bajá lento en 3 segundos."], tip: "Priorizá el rango completo sobre el peso." },
   "Abducción de cadera en máquina": { muscles: "Glúteo medio · TFL · Rotadores externos", steps: ["Sentada en la máquina con las piernas juntas.", "Abrí las piernas hacia afuera hasta el rango completo.", "Sostenés 1 segundo al final.", "Volvé lento — 3 segundos de bajada."], tip: "La bajada lenta y controlada es donde más trabaja el glúteo medio." },
   "90/90 Hip Stretch": { muscles: "Rotadores de cadera · Glúteos · Aductores", steps: ["Sentate con ambas piernas en 90°.", "Inclinате hacia adelante sobre la pierna delantera.", "Mantené la posición 60 segundos.", "Cambiá de lado."], tip: "Respirá profundo para soltar la tensión de cadera." },
+
+  // ── RUTINA ATLÉTICA B ────────────────────────────────────────────────────
+  "Movilidad de isquiotibiales de pie": { muscles: "Isquiotibiales · Gemelos · Columna lumbar", steps: ["De pie, pierna estirada apoyada en banco o escalón.", "Espalda recta, inclinате desde la cadera.", "Sentí el estiramiento detrás del muslo sin dolor.", "Flexioná y extendé suavemente — movimiento dinámico.", "10 reps por lado."], tip: "No rebotar. El movimiento dinámico prepara mejor el tejido que el estático antes de entrenar." },
+  "Movilidad arrodillado con peso": { muscles: "Flexores de cadera · Cuádriceps · Tobillo", steps: ["Arrodillado en el piso, un pie adelante en zancada.", "Sostené un peso liviano en el pecho.", "Desplazá la cadera hacia adelante y abajo.", "La rodilla trasera permanece en el piso.", "Volvé y repetí — movimiento controlado."], tip: "El peso te ayuda a relajar y bajar más. No es para hacer fuerza." },
+  "Almeja con banda + despegue": { muscles: "Glúteo medio · Rotadores externos de cadera · Estabilizadores de cadera", steps: ["Banda elástica justo sobre las rodillas. Acostado de lado, rodillas flexionadas.", "Abrí la rodilla de arriba sin mover la pelvis — almeja.", "Al llegar arriba, despegá el pie del piso apretando el glúteo.", "Volvé lento. La pelvis no rueda hacia atrás.", "12 reps y cambiá de lado."], tip: "Específico para tu tracking rotuliano — activa el glúteo medio que estabiliza la rótula." },
+  "Caminar semi sentado con banda": { muscles: "Glúteo medio · Cuádriceps · Estabilizadores de rodilla", steps: ["Banda elástica sobre las rodillas.", "Flexioná rodillas hasta media sentadilla.", "Caminá hacia un costado con pasos medios, sin que los pies se junten.", "Mantené las rodillas empujando hacia afuera contra la banda.", "10 pasos y volvé."], tip: "Si las rodillas colapsan hacia adentro, bajá la tensión de la banda." },
+  "Abducción en sentadilla con banda": { muscles: "Glúteo medio · TFL · Estabilizadores de cadera", steps: ["Banda elástica sobre las rodillas.", "Descendé a media sentadilla.", "Abrí las rodillas hacia afuera contra la resistencia.", "Mantené 2 segundos y volvé.", "No te levantes entre repeticiones."], tip: "Combina activación del glúteo medio con la posición funcional de la sentadilla." },
+  "Peso muerto a una pierna": { img: "https://weighttraining.guide/wp-content/uploads/2016/10/single-leg-romanian-deadlift-resized.png", muscles: "Isquiotibiales · Glúteos · Estabilizadores de tobillo y cadera · Core", steps: ["De pie sobre una pierna, mancuerna en la mano opuesta.", "Con la espalda recta, llevá el torso hacia adelante y la pierna libre hacia atrás.", "Descendé hasta sentir tensión en el isquiotibial.", "Empujá desde el talón de la pierna de apoyo para volver.", "No rotes la cadera — mantené la pelvis cuadrada."], tip: "Empezá sin peso hasta dominar el equilibrio. Expone diferencias entre piernas." },
+  "Hip thrust con barra": { img: "https://weighttraining.guide/wp-content/uploads/2016/10/barbell-hip-thrust-resized.png", muscles: "Glúteos · Isquiotibiales · Core", steps: ["Apoyá la espalda alta en un banco, barra sobre las caderas con almohadilla.", "Pies al ancho de hombros, rodillas a 90° al subir.", "Empujá las caderas hasta que el cuerpo forme una línea recta.", "Apretá los glúteos 2 segundos arriba.", "Bajá controlado — las caderas no tocan el piso entre reps."], tip: "La barra permite más carga que la mancuerna. El apretón arriba es donde más trabajan los glúteos." },
+  "Estocadas caminando con mancuernas": { img: "https://weighttraining.guide/wp-content/uploads/2016/05/dumbbell-walking-lunge-resized.png", muscles: "Cuádriceps · Glúteos · Isquiotibiales · Estabilizadores de tobillo", steps: ["Mancuernas en cada mano, de pie con postura erguida.", "Dá un paso largo hacia adelante y descendé.", "La rodilla trasera casi toca el piso.", "Empujá desde el pie delantero y avanzá con la otra pierna.", "Rodillas siempre apuntando hacia afuera."], tip: "Bajá lento (2-3 seg) como indicó el kinesiólogo. La fase excéntrica fortalece el cuádriceps." },
+  "Nordic curl": { muscles: "Isquiotibiales (excéntrico) · Glúteos · Core", steps: ["Arrodillado, fijá los pies debajo de algo estable.", "Brazos cruzados sobre el pecho.", "Inclinате hacia adelante muy lentamente resistiendo con los isquiotibiales.", "Cuando no puedas más, apoyá las manos y volvé empujando.", "El movimiento hacia adelante es el trabajo real."], tip: "Uno de los más efectivos para prevenir lesiones de isquiotibiales. El kinesiólogo lo incluyó por algo." },
+  "Copenhagen plank": { muscles: "Aductores · Core · Estabilizadores de cadera · Glúteo medio", steps: ["Acostado de lado, apoyá el pie superior en un banco o cajón.", "Levantá la cadera formando una línea recta.", "El pie inferior puede quedar en el aire.", "Mantené sin dejar caer la cadera.", "20 segundos por lado."], tip: "Fortalece los aductores excéntricamente — clave para las frenadas laterales del tenis." },
+  "Lateral band walk": { muscles: "Glúteo medio · TFL · Estabilizadores de rodilla", steps: ["Banda elástica sobre las rodillas o tobillos.", "Posición de media sentadilla.", "Caminá hacia un costado manteniendo la distancia entre los pies.", "No dejes que las rodillas colapsen hacia adentro.", "15 pasos en cada dirección."], tip: "Distinto al calentamiento: acá el enfoque es el movimiento lateral puro con más recorrido." },
+  "Sleeper stretch": { muscles: "Cápsula posterior del hombro · Manguito rotador · Deltoides posterior", steps: ["Acostado de lado sobre el hombro a trabajar.", "Brazo extendido al frente a 90°, codo doblado, palma hacia arriba.", "Con la otra mano, empujá suavemente la muñeca hacia el piso.", "Sentís el estiramiento en la parte posterior del hombro.", "Mantené 30 segundos. Respirá y relajá."], tip: "Apunta exactamente al engrosamiento capsular que mostró tu resonancia. Sé consistente." },
+  "Dislocamiento con palo": { muscles: "Hombros · Columna torácica · Pectoral · Bíceps", steps: ["Agarrá un palo con agarre amplio, más que el ancho de hombros.", "Con los brazos extendidos, pasá el palo por delante y sobre la cabeza hasta atrás.", "Sin doblar los codos.", "Volvé al frente. Movimiento fluido, sin dolor.", "10 reps a ritmo lento."], tip: "Si sentís pinzamiento, abrí más el agarre. Con el tiempo el rango mejora." },
+  "Pull Apart con banda": { muscles: "Deltoides posterior · Romboides · Trapecio medio · Manguito rotador", steps: ["Sosté una banda con ambas manos al frente, agarre prono.", "Brazos extendidos a la altura de los hombros.", "Separalas hacia los costados hasta que la banda toque el pecho.", "Apretá los omóplatos 1 segundo.", "Volvé lento. Sin encogerse de hombros."], tip: "Complemento perfecto del Face Pull. Juntos trabajan toda la musculatura posterior del hombro." },
+  "Retracción escapular con banda": { muscles: "Romboides · Trapecio medio · Trapecio inferior", steps: ["Banda fijada a altura del pecho. Agarrá con cada mano.", "Brazos extendidos al frente.", "Jalá hacia atrás juntando los omóplatos.", "Mantené 3 segundos apretando.", "Volvé lento resistiendo la banda."], tip: "La pausa de 3 seg es lo que hace el ejercicio efectivo. Sin ella es solo movimiento." },
+  "Remo en TRX": { muscles: "Dorsales · Romboides · Trapecio · Bíceps · Core", steps: ["Agarrá las manijas del TRX con palmas hacia adentro.", "Inclinate hacia atrás — más inclinado = más difícil.", "Jalá el cuerpo hacia arriba llevando los codos hacia atrás.", "En la cima, pausá 3 segundos apretando los omóplatos.", "Bajá lento con control."], tip: "La pausa de 3 seg la indicó el kinesiólogo — activa el trapecio inferior específicamente." },
+  "Remo en polea baja sentado": { img: "https://weighttraining.guide/wp-content/uploads/2016/05/cable-seated-row-resized.png", muscles: "Dorsales · Romboides · Trapecio · Bíceps", steps: ["Sentado en la máquina de polea baja, pies sobre el apoyo.", "Rodillas levemente flexionadas, torso erguido.", "Jalá el mango hacia el abdomen con codos cerca del cuerpo.", "Apretá los omóplatos al llegar.", "Extendé los brazos controlando el regreso."], tip: "Mantené el torso vertical durante todo el movimiento. Inclinarte arruina el patrón muscular." },
+  "Jalón al pecho agarre neutro": { img: "https://weighttraining.guide/wp-content/uploads/2016/05/lat-pull-down-resized.png", muscles: "Dorsales · Bíceps · Trapecio inferior · Romboides", steps: ["Usá un accesorio de agarre neutro (palmas enfrentadas).", "Sentado, muslos bajo los apoyos, torso erguido.", "Jalá hacia el pecho superior iniciando con los codos.", "Llegá hasta que la manija quede frente al pecho.", "Volvé lento — 3 segundos en la fase excéntrica."], tip: "El agarre neutro es más amigable con el hombro que el agarre prono. Ideal para tu supraespinoso." },
+  "Remo con mancuerna neutro": { img: "https://weighttraining.guide/wp-content/uploads/2016/05/one-arm-dumbbell-row-resized.png", muscles: "Dorsales · Romboides · Trapecio · Bíceps", steps: ["Apoyá una mano y rodilla en el banco, espalda paralela al piso.", "Mancuerna colgando, palma hacia el cuerpo.", "Jalá el codo hacia atrás y arriba pegado al cuerpo.", "Llegá hasta que el codo supere la línea de la espalda.", "Pausá 2 segundos arriba. Bajá controlado."], tip: "La pausa superior convierte esto en control escapular, no solo tracción." },
+  "Press banco inclinado mancuernas": { img: "https://weighttraining.guide/wp-content/uploads/2016/05/incline-dumbbell-bench-press-resized.png", muscles: "Pectoral superior · Deltoides anterior · Tríceps", steps: ["Banco inclinado 30-45°. Mancuernas a los lados del pecho.", "Codos a 45° del torso.", "Empujá las mancuernas hacia arriba y levemente hacia adentro.", "Bajá controlado hasta sentir el pecho trabajar.", "Sin dolor en el hombro: si aparece, reducí el rango o el peso."], tip: "El ángulo 30-45° reduce la carga sobre el supraespinoso comparado con el banco plano." },
+  "Curl martillo": { img: "https://weighttraining.guide/wp-content/uploads/2016/05/dumbbell-hammer-curl-resized.png", muscles: "Bíceps (cabeza larga) · Braquial · Braquiorradial · Antebrazo", steps: ["De pie, mancuernas a los costados con agarre neutro (pulgares arriba).", "Sin mover los codos, flexioná los antebrazos hacia los hombros.", "Llegá hasta el final del rango.", "Bajá lento — 2 segundos.", "Podés alternar brazos o hacer ambos juntos."], tip: "El agarre neutro trabaja el braquial, que le da volumen al brazo debajo del bíceps." },
+  "Rotación externa con cuerda": { muscles: "Manguito rotador (infraespinoso · redondo menor) · Deltoides posterior", steps: ["Polea a altura del codo, accesorio de cuerda.", "De pie de costado a la polea, codo a 90° pegado al cuerpo.", "Rotá el antebrazo hacia afuera — solo el antebrazo gira.", "Pausá 2 segundos al final del rango.", "Volvé lento resistiendo la polea."], tip: "Trabaja directamente los músculos que protegen tu supraespinoso irritado." },
+  "Dead hang en barra": { muscles: "Agarre · Hombros · Columna · Descompresión", steps: ["Agarrá la barra con agarre prono, pies despegados del piso.", "Dejá que los hombros suban y los pies cuelguen.", "Relajá la columna completamente.", "Respirá profundo y mantené.", "30 segundos."], tip: "Descomprime la columna y estira la cápsula del hombro de forma pasiva. Ideal como cierre." },
+  "Posición de oso": { muscles: "Core profundo · Hombros · Cadera flexora · Coordinación", steps: ["En cuadrupedia, levantá las rodillas 5 cm del piso.", "Espalda recta — ni arqueada ni redondeada.", "Mantené sin que las rodillas toquen el piso.", "Respirá normalmente.", "20-30 segundos."], tip: "Si la espalda se arquea, bajá las rodillas un poco más. La postura es todo acá." },
+  "Rotación en superman": { muscles: "Columna torácica · Glúteos · Deltoides posterior · Estabilizadores lumbares", steps: ["Acostado boca abajo, brazos extendidos al frente.", "Levantá brazos y piernas del piso simultáneamente.", "Rotá los brazos hacia los costados (posición Y).", "Volvé a la T y bajá. Eso es una rep.", "10 reps lentas y controladas."], tip: "Activa la cadena posterior completa. El movimiento de brazos trabaja el trapecio inferior." },
+  "Sentadilla barra baja": { img: "https://weighttraining.guide/wp-content/uploads/2016/05/barbell-squat-resized.png", muscles: "Glúteos · Cuádriceps · Isquiotibiales · Core · Espalda baja", steps: ["Barra sobre los deltoides posteriores (más abajo que la frontal).", "Pies al ancho de hombros o levemente más, puntas afuera.", "Descendé manteniendo el torso inclinado unos grados hacia adelante.", "Profundidad hasta paralelo o por debajo.", "Empujá el piso y subí con caderas y hombros al mismo ritmo."], tip: "La low bar permite más carga. El torso más inclinado distribuye mejor el peso." },
+  "Hang clean": { img: "https://weighttraining.guide/wp-content/uploads/2016/10/hang-power-clean-resized.png", muscles: "Cadena posterior completa · Trapecio · Hombros · Coordinación neuro-muscular", steps: ["De pie, barra en la cadera, agarre prono al ancho de hombros.", "Pequeña flexión de rodillas, luego explotá con las caderas hacia arriba.", "Encogte los hombros (shrug) y jalá la barra hacia arriba.", "Rotá los codos hacia adelante atrapando la barra en los deltoides frontales.", "Amortiguá en media sentadilla. Volvé a la posición inicial."], tip: "Empezá con peso liviano. La técnica importa más que la carga. La explosividad se aprende." },
+  "Remo en máquina pecho apoyado": { muscles: "Dorsales · Romboides · Trapecio · Bíceps", steps: ["Apoyá el pecho en el pad inclinado de la máquina.", "Agarrá los mangos con el agarre elegido.", "Jalá los codos hacia atrás y arriba.", "Apretá los omóplatos al llegar arriba.", "Bajá controlado sin que el torso se levante del pad."], tip: "El pad elimina el impulso del cuerpo. Todo el trabajo va a la espalda." },
+  "Suitcase carry": { muscles: "Core (antiflexión lateral) · Cuadrado lumbar · Trapecio · Agarre", steps: ["Mancuerna o kettlebell pesada en UNA sola mano.", "Caminá manteniendo el torso completamente vertical.", "No te inclinés hacia el lado del peso — resistí.", "Hombros nivelados, mirada al frente.", "40 metros por lado."], tip: "El farmer carry es con dos manos. Este es con una — mucho más duro para el core lateral." },
+  "Medicine ball slam": { muscles: "Core · Hombros · Dorsales · Cardiovascular · Tren inferior", steps: ["De pie, pelota medicinal sobre la cabeza con brazos extendidos.", "Tensá el core y golpeá la pelota contra el piso con toda la fuerza.", "Flexioná rodillas al bajar, no solo la espalda.", "Agarrá la pelota cuando rebota.", "8 reps explosivas."], tip: "Libera tensión y entrena potencia. El sonido del golpe dice todo sobre la intensidad." },
+  "Broad jump": { muscles: "Cuádriceps · Glúteos · Pantorrillas · Sistema nervioso", steps: ["De pie, pies al ancho de hombros.", "Flexioná rodillas y caderas, usá los brazos hacia atrás.", "Saltá hacia adelante lo más lejos posible.", "Aterrizá suavemente con rodillas dobladas absorbiendo el impacto.", "5 saltos máximos con recuperación completa entre cada uno."], tip: "Entrena la transferencia de fuerza horizontal — aplicable al primer paso en el tenis." },
 }
 
 const ROUTINES = [
@@ -106,6 +145,70 @@ const ROUTINES = [
         { id:"mob", label:"ACTIVACIÓN", duration:8, color:"#06B6D4", exercises:[{name:"Lateral shuffle + carioca",detail:"3 × 15 metros / lado",timer:90},{name:"Fire hydrant + donkey kick",detail:"2 × 10/lado",timer:90}]},
         { id:"str", label:"POTENCIA Y FUERZA", duration:30, color:"#7A3A10", exercises:[{name:"Sentadilla con salto",detail:"4 × 5",timer:120,sets:4},{name:"Bulgarian Split Squat",detail:"3 × 8/lado",timer:180,sets:3},{name:"Landmine rotation",detail:"3 × 10/lado",timer:150,sets:3},{name:"Pull-up o jalón al pecho",detail:"3 × 8",timer:150,sets:3},{name:"Abducción de cadera en máquina",detail:"3 × 15",timer:90,sets:3}]},
         { id:"fin", label:"CIERRE", duration:6, color:"#F59E0B", exercises:[{name:"90/90 Hip Stretch",detail:"2 × 60 seg / lado",timer:120}]},
+      ]},
+    ],
+  },
+  {
+    id: "atletica-b", name: "Rutina Atlética B", description: "Fuerza · Hombro Sano · Potencia", emoji: "🏋️", color: "#DC2626",
+    days: [
+      { id:1, label:"DÍA 1", title:"Piernas & Core Profundo", accent:"#DC2626", accentDark:"#991B1B", emoji:"🦵", phases:[
+        { id:"mob", label:"MOVILIDAD", duration:8, color:"#06B6D4", exercises:[
+          {name:"Movilidad de isquiotibiales de pie",detail:"10 reps / lado",timer:60},
+          {name:"Movilidad arrodillado con peso",detail:"8 reps / lado",timer:60},
+          {name:"Almeja con banda + despegue",detail:"12 reps / lado",timer:60},
+          {name:"Caminar semi sentado con banda",detail:"2 × 10 pasos c/lado",timer:60},
+          {name:"Abducción en sentadilla con banda",detail:"12 reps",timer:60},
+        ]},
+        { id:"str", label:"FUERZA", duration:35, color:"#DC2626", exercises:[
+          {name:"Peso muerto a una pierna",detail:"3 × 8 / lado — bajá lento",timer:240,sets:3},
+          {name:"Hip thrust con barra",detail:"4 × 10 — pausa 2 seg arriba",timer:180,sets:4},
+          {name:"Estocadas caminando con mancuernas",detail:"3 × 12 / lado — excéntrico 3 seg",timer:210,sets:3},
+          {name:"Nordic curl",detail:"3 × 6 — excéntrico puro",timer:240,sets:3},
+          {name:"Copenhagen plank",detail:"3 × 20 seg / lado",timer:180,sets:3},
+        ]},
+        { id:"fin", label:"FINALIZADOR", duration:8, color:"#F59E0B", exercises:[
+          {name:"Farmer carry",detail:"3 × 30 metros",timer:90},
+          {name:"Lateral band walk",detail:"2 × 15 pasos / lado",timer:60},
+        ]},
+      ]},
+      { id:2, label:"DÍA 2", title:"Tren Superior & Hombro", accent:"#7C3AED", accentDark:"#5B21B6", emoji:"💪", phases:[
+        { id:"mob", label:"ACTIVACIÓN HOMBRO", duration:12, color:"#06B6D4", exercises:[
+          {name:"Sleeper stretch",detail:"2 × 30 seg / lado",timer:60},
+          {name:"Dislocamiento con palo",detail:"10 reps — agarre amplio",timer:60},
+          {name:"Pull Apart con banda",detail:"15 reps",timer:60},
+          {name:"Retracción escapular con banda",detail:"12 reps — pausa 3 seg",timer:90},
+          {name:"Remo en TRX",detail:"10 reps — pausa 3 seg arriba",timer:90},
+          {name:"Face Pull con cuerda",detail:"15 reps — pausa 1 seg",timer:60},
+        ]},
+        { id:"str", label:"FUERZA", duration:30, color:"#7C3AED", exercises:[
+          {name:"Remo en polea baja sentado",detail:"4 × 8",timer:240,sets:4},
+          {name:"Jalón al pecho agarre neutro",detail:"3 × 10",timer:210,sets:3},
+          {name:"Remo con mancuerna neutro",detail:"3 × 10 / lado — pausa 2 seg",timer:210,sets:3},
+          {name:"Press banco inclinado mancuernas",detail:"3 × 8 — rango controlado",timer:210,sets:3},
+          {name:"Curl martillo",detail:"2 × 12",timer:150,sets:2},
+        ]},
+        { id:"fin", label:"FINALIZADOR", duration:8, color:"#F59E0B", exercises:[
+          {name:"Rotación externa con cuerda",detail:"3 × 15 — pausa 2 seg",timer:180},
+          {name:"Dead hang en barra",detail:"3 × 30 seg",timer:90},
+        ]},
+      ]},
+      { id:3, label:"DÍA 3", title:"Full Body & Potencia", accent:"#059669", accentDark:"#047857", emoji:"⚡", phases:[
+        { id:"mob", label:"MOVILIDAD", duration:8, color:"#06B6D4", exercises:[
+          {name:"Posición de oso",detail:"3 × 20 seg",timer:60},
+          {name:"Rotación en superman",detail:"10 reps",timer:60},
+          {name:"90/90 Hip Rotations",detail:"10 reps / lado",timer:60},
+        ]},
+        { id:"str", label:"FUERZA", duration:35, color:"#059669", exercises:[
+          {name:"Sentadilla barra baja",detail:"4 × 5 — carga alta",timer:300,sets:4},
+          {name:"Hang clean",detail:"3 × 5 — técnica > peso",timer:300,sets:3},
+          {name:"Press banco inclinado mancuernas",detail:"3 × 8",timer:210,sets:3},
+          {name:"Remo en máquina pecho apoyado",detail:"3 × 10",timer:210,sets:3},
+          {name:"Suitcase carry",detail:"3 × 40 metros / lado",timer:120,sets:3},
+        ]},
+        { id:"fin", label:"FINALIZADOR", duration:10, color:"#F59E0B", exercises:[
+          {name:"Medicine ball slam",detail:"4 × 8 — máxima potencia",timer:60},
+          {name:"Broad jump",detail:"4 × 5 — recuperación completa",timer:60},
+        ]},
       ]},
     ],
   },
