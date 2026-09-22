@@ -85,7 +85,7 @@ const ALL_INFO: Record<string, { muscles: string; steps: string[]; tip: string; 
   "Nordic curl": { muscles: "Isquiotibiales (excéntrico) · Glúteos · Core", steps: ["Arrodillado, fijá los pies debajo de algo estable.", "Brazos cruzados sobre el pecho.", "Inclinате hacia adelante muy lentamente resistiendo con los isquiotibiales.", "Cuando no puedas más, apoyá las manos y volvé empujando.", "El movimiento hacia adelante es el trabajo real."], tip: "Uno de los más efectivos para prevenir lesiones de isquiotibiales. El kinesiólogo lo incluyó por algo." },
   "Copenhagen plank": { muscles: "Aductores · Core · Estabilizadores de cadera · Glúteo medio", steps: ["Acostado de lado, apoyá el pie superior en un banco o cajón.", "Levantá la cadera formando una línea recta.", "El pie inferior puede quedar en el aire.", "Mantené sin dejar caer la cadera.", "20 segundos por lado."], tip: "Fortalece los aductores excéntricamente — clave para las frenadas laterales del tenis." },
   "Lateral band walk": { muscles: "Glúteo medio · TFL · Estabilizadores de rodilla", steps: ["Banda elástica sobre las rodillas o tobillos.", "Posición de media sentadilla.", "Caminá hacia un costado manteniendo la distancia entre los pies.", "No dejes que las rodillas colapsen hacia adentro.", "15 pasos en cada dirección."], tip: "Distinto al calentamiento: acá el enfoque es el movimiento lateral puro con más recorrido." },
-  "Sleeper stretch": { muscles: "Cápsula posterior del hombro · Manguito rotador · Deltoides posterior", steps: ["Acostado de lado sobre el hombro a trabajar.", "Brazo extendido al frente a 90°, codo doblado, palma hacia arriba.", "Con la otra mano, empujá suavemente la muñeca hacia el piso.", "Sentís el estiramiento en la parte posterior del hombro.", "Mantené 30 segundos. Respirá y relajá."], tip: "Apunta exactamente al engrosamiento capsular que mostró tu resonancia. Sé consistente." },
+  "Sleeper stretch": { muscles: "Cápsula posterior del hombro · Rotadores externos", steps: ["Acostado sobre el lado derecho, brazo a 90° delante del cuerpo y codo a 90°.", "El antebrazo apunta al techo.", "Con la mano izquierda, empujá suavemente el antebrazo derecho hacia la camilla o el piso.", "Sostené 30 segundos sin rebotar.", "Tenés que sentir tensión atrás del hombro, nunca dolor adelante."], tip: "Rodá el tronco un poco hacia atrás (20-30°) para sacar presión de la parte delantera. Suave: si duele, no sirve." },
   "Dislocamiento con palo": { muscles: "Hombros · Columna torácica · Pectoral · Bíceps", steps: ["Agarrá un palo con agarre amplio, más que el ancho de hombros.", "Con los brazos extendidos, pasá el palo por delante y sobre la cabeza hasta atrás.", "Sin doblar los codos.", "Volvé al frente. Movimiento fluido, sin dolor.", "10 reps a ritmo lento."], tip: "Si sentís pinzamiento, abrí más el agarre. Con el tiempo el rango mejora." },
   "Pull Apart con banda": { muscles: "Deltoides posterior · Romboides · Trapecio medio · Manguito rotador", steps: ["Sosté una banda con ambas manos al frente, agarre prono.", "Brazos extendidos a la altura de los hombros.", "Separalas hacia los costados hasta que la banda toque el pecho.", "Apretá los omóplatos 1 segundo.", "Volvé lento. Sin encogerse de hombros."], tip: "Complemento perfecto del Face Pull. Juntos trabajan toda la musculatura posterior del hombro." },
   "Retracción escapular con banda": { muscles: "Romboides · Trapecio medio · Trapecio inferior", steps: ["Banda fijada a altura del pecho. Agarrá con cada mano.", "Brazos extendidos al frente.", "Jalá hacia atrás juntando los omóplatos.", "Mantené 3 segundos apretando.", "Volvé lento resistiendo la banda."], tip: "La pausa de 3 seg es lo que hace el ejercicio efectivo. Sin ella es solo movimiento." },
@@ -105,6 +105,27 @@ const ALL_INFO: Record<string, { muscles: string; steps: string[]; tip: string; 
   "Suitcase carry": { muscles: "Core (antiflexión lateral) · Cuadrado lumbar · Trapecio · Agarre", steps: ["Mancuerna o kettlebell pesada en UNA sola mano.", "Caminá manteniendo el torso completamente vertical.", "No te inclinés hacia el lado del peso — resistí.", "Hombros nivelados, mirada al frente.", "40 metros por lado."], tip: "El farmer carry es con dos manos. Este es con una — mucho más duro para el core lateral." },
   "Medicine ball slam": { muscles: "Core · Hombros · Dorsales · Cardiovascular · Tren inferior", steps: ["De pie, pelota medicinal sobre la cabeza con brazos extendidos.", "Tensá el core y golpeá la pelota contra el piso con toda la fuerza.", "Flexioná rodillas al bajar, no solo la espalda.", "Agarrá la pelota cuando rebota.", "8 reps explosivas."], tip: "Libera tensión y entrena potencia. El sonido del golpe dice todo sobre la intensidad." },
   "Broad jump": { muscles: "Cuádriceps · Glúteos · Pantorrillas · Sistema nervioso", steps: ["De pie, pies al ancho de hombros.", "Flexioná rodillas y caderas, usá los brazos hacia atrás.", "Saltá hacia adelante lo más lejos posible.", "Aterrizá suavemente con rodillas dobladas absorbiendo el impacto.", "5 saltos máximos con recuperación completa entre cada uno."], tip: "Entrena la transferencia de fuerza horizontal — aplicable al primer paso en el tenis." },
+
+  // ── CUIDADO ESCAPULAR ─────────────────────────────────────────────────────
+  "Extensión torácica en foam roller": { muscles: "Movilidad de columna torácica", steps: ["Acostado boca arriba con el roller bajo la parte alta de la espalda.", "Manos detrás de la cabeza, codos juntos.", "Dejá caer la espalda por encima del roller, sin arquear la zona lumbar.", "Volvé y mové el roller un segmento más arriba o abajo.", "Respirá profundo en cada extensión."], tip: "La cadera queda apoyada en el piso. Si sentís la lumbar, estás extendiendo desde el lugar equivocado." },
+  "Open book (libro abierto)": { muscles: "Rotación torácica · Pectoral", steps: ["Acostado de costado, rodillas flexionadas a 90° y brazos estirados adelante.", "Abrí el brazo de arriba hacia el otro lado como si abrieras un libro.", "Seguí la mano con la mirada.", "Rodillas juntas y quietas en el piso.", "Volvé lento y repetí."], tip: "No fuerces que la mano toque el piso: el rango lo da la columna torácica, no el hombro." },
+  "Estiramiento de pectoral menor en puerta": { muscles: "Pectoral menor · Pectoral mayor", steps: ["Antebrazo apoyado en el marco de la puerta, codo un poco por encima del hombro.", "Avanzá el tronco hacia adelante y rotalo levemente al lado contrario.", "Sentí el estiramiento en la parte alta y anterior del pecho.", "Sostené 30 segundos respirando normal.", "Sin dolor en la parte delantera del hombro."], tip: "Un pectoral menor corto tira la escápula hacia adelante y la despega de las costillas. Es clave para tu caso." },
+  "Push-up plus en pared": { muscles: "Serrato anterior", steps: ["Manos en la pared a la altura de los hombros.", "Hacé una flexión corta contra la pared.", "Al estirar los brazos, seguí empujando: separá las escápulas y redondeá apenas la parte alta de la espalda.", "Sostené 2 segundos en ese 'plus'.", "Volvé controlando."], tip: "El 'plus' del final es el ejercicio. La flexión es solo el camino para llegar ahí." },
+  "Push-up plus en el piso": { muscles: "Serrato anterior · Pectoral · Tríceps", steps: ["Posición de flexión (con rodillas si hace falta).", "Hacé la flexión completa.", "Arriba, empujá el piso lejos: las escápulas se separan y la espalda alta se redondea.", "Pausa de 1-2 segundos en el plus.", "Bajá manteniendo las escápulas pegadas a las costillas."], tip: "Si ves que las escápulas se despegan al bajar, pasá a la versión con rodillas o inclinada." },
+  "Wall slides con antebrazos": { muscles: "Serrato anterior · Trapecio inferior", steps: ["De frente a la pared, antebrazos apoyados a la altura de la cara.", "Empujá suavemente la pared (activa el serrato).", "Deslizá los antebrazos hacia arriba en forma de Y.", "Sin encoger los hombros hacia las orejas.", "Bajá controlando."], tip: "Pensá en 'llevar las escápulas hacia las axilas' mientras subís." },
+  "Wall slides con banda y lift-off": { muscles: "Serrato anterior · Trapecio inferior · Rotadores externos", steps: ["Banda alrededor de las muñecas, antebrazos en la pared.", "Abrí apenas los brazos contra la banda.", "Deslizá hacia arriba en Y.", "Arriba, separá los antebrazos 2 cm de la pared y sostené 2 segundos.", "Volvé a apoyar y bajá lento."], tip: "El lift-off del final es el que más trabaja el trapecio inferior. Sin arquear la zona lumbar." },
+  "Dynamic hug con banda": { muscles: "Serrato anterior", steps: ["Banda anclada detrás tuyo a la altura del pecho.", "Brazos abiertos, codos levemente flexionados.", "Llevá los brazos adelante como abrazando un árbol grande.", "Al final, estirate hacia adelante separando las escápulas.", "Volvé lento."], tip: "Mantené los hombros abajo. Si se encogen, bajá la resistencia." },
+  "Prone Y raises": { muscles: "Trapecio inferior", steps: ["Boca abajo en el piso o banco, frente apoyada.", "Brazos estirados en Y, pulgares hacia el techo.", "Primero llevá las escápulas atrás y abajo.", "Después subí los brazos unos centímetros.", "Pausa 2 segundos arriba y bajá."], tip: "El rango es chico. Si subís mucho, compensa el trapecio superior o la espalda baja." },
+  "Prone T raises": { muscles: "Trapecio medio · Romboides", steps: ["Boca abajo, brazos abiertos a 90° en T, pulgares hacia el techo.", "Juntá las escápulas atrás y abajo.", "Subí los brazos manteniendo esa posición.", "Pausa 2 segundos arriba.", "Bajá lento."], tip: "La escápula se mueve primero y los brazos la siguen, no al revés." },
+  "Prone Y-T-W raises": { muscles: "Trapecio inferior y medio · Romboides · Rotadores externos", steps: ["Boca abajo en piso o banco inclinado.", "Hacé las repeticiones en Y (brazos arriba en diagonal).", "Después en T (brazos a los costados a 90°).", "Después en W (codos flexionados, rotando hacia afuera).", "Siempre escápula atrás y abajo antes de subir."], tip: "Con 0,5-1 kg alcanza. Esto es control, no un ejercicio de carga." },
+  "Low row con banda": { muscles: "Romboides · Trapecio medio e inferior · Dorsal", steps: ["Banda anclada adelante a la altura del ombligo.", "Brazos estirados, primero bajá y retraé las escápulas.", "Después tirá con los codos pegados al cuerpo hasta la cadera.", "Pausa de 1 segundo atrás.", "Volvé dejando que la escápula avance controlada."], tip: "El 'abajo' es tan importante como el 'atrás'. Sin encoger los hombros." },
+  "Rotación externa con banda a 90°": { muscles: "Infraespinoso · Redondo menor · Estabilizadores escapulares", steps: ["Banda anclada adelante, brazo a 90° de abducción y codo a 90°.", "Antebrazo apuntando hacia adelante.", "Rotá llevando la mano hacia arriba hasta la vertical.", "Sin mover el codo ni encoger el hombro.", "Bajá en 3 segundos."], tip: "Muy útil para el saque y el smash en el tenis. Poca carga y control total." },
+  "Reloj escapular frente al espejo": { muscles: "Control motor escapulotorácico", steps: ["De costado al espejo o con celular filmando la espalda.", "Imaginá un reloj sobre la escápula.", "Llevá la escápula a las 12 (arriba), 3, 6 (abajo) y 9.", "Movimientos lentos, sin mover el tronco ni el brazo.", "Después hacé círculos completos."], tip: "Parece fácil pero cuesta. Es entrenar al cerebro para 'encontrar' la escápula." },
+  "Estocada con punch": { muscles: "Serrato anterior · Cadena cinética tronco-pierna", steps: ["Paso adelante en estocada.", "Al bajar, lanzá un golpe hacia adelante con el brazo contrario a la pierna adelantada.", "Al final del golpe, protracción: la escápula avanza.", "Volvé a la posición inicial.", "Alterná lados."], tip: "Rango de estocada cómodo para tu rodilla. El foco está en el hombro." },
+  "Diagonal pull con banda": { muscles: "Trapecio · Rotadores externos · Cadena diagonal", steps: ["Banda pisada o anclada abajo del lado contrario.", "Agarrá la banda a la altura de la cadera opuesta.", "Tirá en diagonal hacia arriba y afuera, como arrancando una cortadora de césped.", "Terminá con el brazo arriba y la escápula abajo y atrás.", "Volvé lento."], tip: "Es un patrón parecido al revés del tenis. Buena transferencia a la cancha." },
+  "Landmine press a una mano": { muscles: "Serrato anterior · Deltoides anterior · Core", steps: ["Barra anclada en un rincón o landmine, extremo a la altura del hombro.", "Semiarrodillado o de pie, empujá la barra hacia arriba y adelante.", "Al final, seguí empujando: la escápula avanza y rota hacia arriba.", "Bajá controlando.", "Sin arquear la zona lumbar."], tip: "El press en diagonal es mucho más amigable para el hombro que el press militar mientras trabajás la escápula." },
+  "Cross-body stretch": { muscles: "Cápsula posterior · Deltoides posterior", steps: ["De pie o sentado, llevá el brazo estirado cruzando por delante del pecho.", "Con la otra mano, tomalo por arriba del codo.", "Llevalo hacia el cuerpo sin rotar el tronco.", "Mantené el hombro abajo, lejos de la oreja.", "Sostené 30 segundos."], tip: "Si sentís pinzamiento adelante del hombro, bajá un poco la altura del brazo." },
+  "Serratus punch en polea": { muscles: "Serrato anterior", steps: ["Polea a la altura del hombro, de espaldas a ella.", "Brazo estirado adelante sosteniendo el agarre.", "Sin doblar el codo, avanzá solo la escápula (el brazo se alarga unos centímetros).", "Pausa de 1 segundo.", "Volvé dejando que la escápula retroceda controlada."], tip: "El rango es chico, de pocos centímetros. Si se mueve el codo, bajá el peso." },
 }
 
 const ROUTINES = [
@@ -208,6 +229,61 @@ const ROUTINES = [
         { id:"fin", label:"FINALIZADOR", duration:10, color:"#F59E0B", exercises:[
           {name:"Medicine ball slam",detail:"4 × 8 — máxima potencia",timer:60},
           {name:"Broad jump",detail:"4 × 5 — recuperación completa",timer:60},
+        ]},
+      ]},
+    ],
+  },
+  {
+    id: "escapula-casa", name: "Cuidado Escapular", description: "Serrato · Trapecio inferior · Movilidad torácica", emoji: "🪽", color: "#0EA5E9",
+    days: [
+      { id:1, label:"FASE 1", title:"Control y activación (semanas 1-3)", accent:"#0EA5E9", accentDark:"#0369A1", emoji:"🎯", phases:[
+        { id:"mob", label:"MOVILIDAD", duration:7, color:"#06B6D4", exercises:[
+          {name:"Extensión torácica en foam roller",detail:"2 × 10 — roller a la altura de las escápulas",timer:90},
+          {name:"Open book (libro abierto)",detail:"2 × 8 / lado — seguí la mano con la mirada",timer:90},
+          {name:"Estiramiento de pectoral menor en puerta",detail:"3 × 30 seg derecho / 2 × 30 seg izquierdo",timer:60},
+          {name:"Sleeper stretch",detail:"3 × 30 seg — solo brazo derecho, suave",timer:90},
+          {name:"Cross-body stretch",detail:"3 × 30 seg derecho / 1 × 30 seg izquierdo",timer:90},
+        ]},
+        { id:"act", label:"SERRATO", duration:8, color:"#0EA5E9", exercises:[
+          {name:"Push-up plus en pared",detail:"3 × 15 — protracción máxima al final, pausa 2 seg",timer:90},
+          {name:"Wall slides con antebrazos",detail:"3 × 12 — antebrazos pegados, empujá la pared",timer:90},
+        ]},
+        { id:"str", label:"TRAPECIO INFERIOR / MEDIO", duration:10, color:"#6366F1", exercises:[
+          {name:"Prone Y raises",detail:"3 × 12 — pulgares arriba, sin peso, pausa 2 seg",timer:90},
+          {name:"Prone T raises",detail:"3 × 12 — apretá las escápulas atrás y abajo",timer:90},
+          {name:"Low row con banda",detail:"3 × 15 — escápula atrás y ABAJO antes de tirar",timer:90},
+        ]},
+        { id:"ctrl", label:"CONTROL", duration:4, color:"#F59E0B", exercises:[
+          {name:"Reloj escapular frente al espejo",detail:"2 × 5 vueltas / lado — lento, sin mover el tronco",timer:90},
+        ]},
+      ]},
+      { id:2, label:"FASE 2", title:"Fuerza e integración (semana 4+)", accent:"#6366F1", accentDark:"#4338CA", emoji:"💪", phases:[
+        { id:"mob", label:"MOVILIDAD", duration:6, color:"#06B6D4", exercises:[
+          {name:"Extensión torácica en foam roller",detail:"2 × 10",timer:90},
+          {name:"Open book (libro abierto)",detail:"2 × 8 / lado",timer:90},
+          {name:"Estiramiento de pectoral menor en puerta",detail:"3 × 30 seg derecho / 2 × 30 seg izquierdo",timer:60},
+          {name:"Sleeper stretch",detail:"3 × 30 seg — solo brazo derecho",timer:90},
+          {name:"Cross-body stretch",detail:"3 × 30 seg derecho / 1 × 30 seg izquierdo",timer:90},
+        ]},
+        { id:"act", label:"SERRATO", duration:10, color:"#0EA5E9", exercises:[
+          {name:"Push-up plus en el piso",detail:"3 × 10-12 — rodillas si hace falta, plus completo",timer:120},
+          {name:"Dynamic hug con banda",detail:"3 × 15 — alcance final, sin encoger hombros",timer:90},
+          {name:"Wall slides con banda y lift-off",detail:"3 × 10 — banda en muñecas, separá 2 cm arriba",timer:90},
+        ]},
+        { id:"str", label:"TRAPECIO INFERIOR / MEDIO", duration:10, color:"#6366F1", exercises:[
+          {name:"Prone Y-T-W raises",detail:"3 × 8 de cada letra — mancuerna 0,5-1 kg opcional",timer:120},
+          {name:"Rotación externa con banda a 90°",detail:"3 × 12 / lado + 1 serie extra derecho — bajada 3 seg",timer:90},
+        ]},
+        { id:"int", label:"INTEGRACIÓN", duration:6, color:"#F59E0B", exercises:[
+          {name:"Estocada con punch",detail:"3 × 8 / lado — punch con brazo contrario, protracción al final",timer:90},
+          {name:"Diagonal pull con banda",detail:"3 × 10 / lado — de cadera contraria a arriba y afuera",timer:90},
+        ]},
+      ]},
+      { id:3, label:"POST-TENIS", title:"Recuperación después del partido", accent:"#10B981", accentDark:"#047857", emoji:"🎾", phases:[
+        { id:"rec", label:"RECUPERACIÓN", duration:6, color:"#10B981", exercises:[
+          {name:"Sleeper stretch",detail:"3 × 30 seg — brazo derecho",timer:90},
+          {name:"Cross-body stretch",detail:"2 × 30 seg — brazo derecho",timer:60},
+          {name:"Estiramiento de pectoral menor en puerta",detail:"2 × 30 seg — lado derecho",timer:60},
         ]},
       ]},
     ],
